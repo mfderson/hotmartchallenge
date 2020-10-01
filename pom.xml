@@ -16,6 +16,7 @@
 
 	<properties>
 		<java.version>11</java.version>
+		<git-code-format-maven-plugin.version>2.6</git-code-format-maven-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -71,6 +72,37 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.cosium.code</groupId>
+				<artifactId>git-code-format-maven-plugin</artifactId>
+				<version>${git-code-format-maven-plugin.version}</version>
+				<executions>
+					<!-- On commit, format the modified java files -->
+					<execution>
+						<id>install-formatter-hook</id>
+						<goals>
+							<goal>install-hooks</goal>
+						</goals>
+					</execution>
+					<!-- On Maven verify phase, fail if any file
+					(including unmodified) is badly formatted -->
+					<execution>
+						<id>validate-code-format</id>
+						<goals>
+								<goal>validate-code-format</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<googleJavaFormatOptions>
+						<aosp>false</aosp>
+						<fixImportsOnly>false</fixImportsOnly>
+						<skipSortingImports>false</skipSortingImports>
+						<skipRemovingUnusedImports>false</skipRemovingUnusedImports>
+					</googleJavaFormatOptions>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
