@@ -17,9 +17,8 @@ public class ProductController {
   private ProductRepository productRepository;
 
   @GetMapping("/{id}")
-  public Product findById(@PathVariable Long id) throws Exception {
+  public Product findById(@PathVariable Long id) {
     return productRepository.findById(id).orElseThrow(
       () -> new ProductNotFoundException(id));
-  }
-  
+  }  
 }
