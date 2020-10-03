@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -23,4 +25,8 @@ public class Product {
   private String description;
 
   private OffsetDateTime createdAt;
+
+  @ManyToOne
+  @JoinColumn(name = "category_id")
+  private Category category;
 }
