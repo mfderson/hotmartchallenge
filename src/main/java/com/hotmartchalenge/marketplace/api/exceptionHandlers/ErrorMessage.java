@@ -1,10 +1,8 @@
 package com.hotmartchalenge.marketplace.api.exceptionHandlers;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import lombok.Builder;
 import lombok.Getter;
 

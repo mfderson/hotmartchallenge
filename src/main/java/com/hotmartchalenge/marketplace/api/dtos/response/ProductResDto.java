@@ -1,7 +1,6 @@
 package com.hotmartchalenge.marketplace.api.dtos.response;
 
 import java.time.OffsetDateTime;
-
 import lombok.Getter;
 import lombok.Setter;
 
