@@ -17,6 +17,8 @@
 	<properties>
 		<java.version>11</java.version>
 		<git-code-format-maven-plugin.version>2.6</git-code-format-maven-plugin.version>
+		<modelmap.version>2.3.0</modelmap.version>
+		<hibernateValidator.version>6.1.5.Final</hibernateValidator.version>
 	</properties>
 
 	<dependencies>
@@ -69,6 +71,18 @@
 			<groupId>io.rest-assured</groupId>
 			<artifactId>spring-mock-mvc</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>${modelmap.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${hibernateValidator.version}</version>
 		</dependency>
 		
 	</dependencies>
