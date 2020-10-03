@@ -5,12 +5,15 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
+import javax.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,27 +38,34 @@ public class Product {
   @JoinColumn(name = "category_id")
   private Category category;
 
-  @OneToMany(mappedBy = "product")
+  @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
   private List<Sale> sales = new ArrayList<>();
 
-  public double getAverageLastTwelveMonths() {
+  @Transient private Double score;
+
+  @PostLoad
+  private void setScoreWithCalculatedValues() {
+    score = calculateAverageLastTwelveMonths() + calculateSalesPerDay();
+  }
+
+  public Double calculateAverageLastTwelveMonths() {
     double sumRating = 0.0;
     OffsetDateTime datetimeTwelveMonthsAgo = OffsetDateTime.now().minusMonths(12L);
     int numberOfSales = 0;
 
-    for (Sale sale : sales) {
+    for (Sale sale : this.getSales()) {
       if (datetimeTwelveMonthsAgo.compareTo(sale.getCreatedAt()) >= 0) {
         numberOfSales++;
         sumRating += sale.getRating();
       }
     }
 
-    return numberOfSales > 0 ? sumRating / numberOfSales : 0;
+    return numberOfSales > 0 ? sumRating / numberOfSales : 0.0;
   }
 
-  public double getSalesPerDay() {
+  public Double calculateSalesPerDay() {
     Long numberOfDays = ChronoUnit.DAYS.between(OffsetDateTime.now(), getCreatedAt());
 
-    return numberOfDays > 0 ? getSales().size() / numberOfDays : 0;
+    return numberOfDays > 0 ? getSales().size() / numberOfDays : 0.0;
   }
 }
