@@ -1,8 +1,10 @@
 package com.hotmartchalenge.marketplace.api.controllers;
 
+import com.hotmartchalenge.marketplace.api.assemblers.ProductReqDtoDisassembler;
+import com.hotmartchalenge.marketplace.api.assemblers.ProductResDtoAssembler;
+import com.hotmartchalenge.marketplace.api.dtos.response.ProductResDto;
 import com.hotmartchalenge.marketplace.domain.entities.Product;
-import com.hotmartchalenge.marketplace.domain.exceptions.ProductNotFoundException;
-import com.hotmartchalenge.marketplace.domain.repositories.ProductRepository;
+import com.hotmartchalenge.marketplace.domain.services.ProductService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/products")
 public class ProductController {
   @Autowired
-  private ProductRepository productRepository;
+  private ProductService productService;
+
+  @Autowired
+  private ProductResDtoAssembler productResDtoAssembler;
 
   @GetMapping("/{id}")
-  public Product findById(@PathVariable Long id) {
-    return productRepository.findById(id).orElseThrow(
-      () -> new ProductNotFoundException(id));
-  }  
+  public ProductResDto findById(@PathVariable Long id) {
+    Product product = productService.findById(id);
+
+    return productResDtoAssembler.toDto(product);
+  }
 }
