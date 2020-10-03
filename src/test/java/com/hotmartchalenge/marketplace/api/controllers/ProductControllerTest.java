@@ -14,7 +14,6 @@ import com.hotmartchalenge.marketplace.domain.repositories.ProductRepository;
 import com.hotmartchalenge.marketplace.domain.services.ProductService;
 import io.restassured.http.ContentType;
 import java.time.OffsetDateTime;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,7 @@ public class ProductControllerTest {
 
   @Autowired private ApiExceptionHandler apiExceptionHandler;
 
-  @Autowired private ProductResDtoAssembler productResDtoAssembler;
+  @MockBean private ProductResDtoAssembler mockedProductResDtoAssembler;
 
   @MockBean private ProductService mockedProductService;
 
@@ -53,9 +52,7 @@ public class ProductControllerTest {
     product.setDescription("Celular da Samsung top de linha");
     product.setCreatedAt(OffsetDateTime.now());
 
-    // ProductResDto productDto = productResDtoAssembler.toDto(product);
-
-    when(mockedProductRepository.findById(EXISTING_ID)).thenReturn(Optional.of(product));
+    when(mockedProductService.findById(EXISTING_ID)).thenReturn(product);
 
     given()
         .accept(ContentType.JSON)
@@ -68,7 +65,7 @@ public class ProductControllerTest {
   @Test
   @DisplayName("Should be able return not found when find a non-existing product")
   void shouldBeAbleReturnNotFound_whenFindNonExistingProduct() {
-    when(mockedProductRepository.findById(anyLong()))
+    when(mockedProductService.findById(anyLong()))
         .thenThrow(new ProductNotFoundException(NON_EXISTING_ID));
 
     given()
@@ -89,6 +86,6 @@ public class ProductControllerTest {
         .then()
         .statusCode(HttpStatus.BAD_REQUEST.value());
 
-    verify(mockedProductRepository, never()).findById(NEGATIVE_ID);
+    verify(mockedProductService, never()).findById(NEGATIVE_ID);
   }
 }
