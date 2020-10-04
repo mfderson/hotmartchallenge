@@ -5,9 +5,16 @@ import com.hotmartchalenge.marketplace.api.assemblers.ProductResDtoAssembler;
 import com.hotmartchalenge.marketplace.api.dtos.request.ProductReqDto;
 import com.hotmartchalenge.marketplace.api.dtos.response.ProductResDto;
 import com.hotmartchalenge.marketplace.domain.entities.Product;
+import com.hotmartchalenge.marketplace.domain.repositories.ProductRepository;
 import com.hotmartchalenge.marketplace.domain.services.ProductService;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
   @Autowired private ProductService productService;
 
+  @Autowired private ProductRepository productRepository;
+
   @Autowired private ProductResDtoAssembler productResDtoAssembler;
 
   @Autowired private ProductReqDtoDisassembler productReqDtoDisassembler;
@@ -33,6 +42,23 @@ public class ProductController {
     Product product = productService.findById(id);
 
     return productResDtoAssembler.toDto(product);
+  }
+
+  @GetMapping
+  public Page<ProductResDto> list(Pageable pageable) {
+    Page<Product> productsPage = productRepository.findAll(pageable);
+
+    List<ProductResDto> productsList =
+        productResDtoAssembler.toCollectionDto(productsPage.getContent());
+
+    Collections.sort(
+        productsList,
+        Comparator.comparing(ProductResDto::getScore).thenComparing(ProductResDto::getName));
+
+    Page<ProductResDto> productResDtoPage =
+        new PageImpl<>(productsList, pageable, productsPage.getTotalElements());
+
+    return productResDtoPage;
   }
 
   @PostMapping
