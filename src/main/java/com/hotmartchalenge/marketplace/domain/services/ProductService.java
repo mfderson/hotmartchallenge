@@ -30,6 +30,12 @@ public class ProductService {
     return productRepository.save(product);
   }
 
+  @Transactional
+  public void delete(Long id) {
+    Product product = findById(id);
+    productRepository.delete(product);
+  }
+
   private Category findCategoryById(Long id) {
     return categoryRepository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
   }
