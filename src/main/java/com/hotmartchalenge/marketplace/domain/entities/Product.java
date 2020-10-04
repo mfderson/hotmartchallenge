@@ -35,7 +35,7 @@ public class Product {
 
   @CreationTimestamp private OffsetDateTime createdAt;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne(cascade = {CascadeType.DETACH})
   @JoinColumn(name = "category_id")
   private Category category;
 
