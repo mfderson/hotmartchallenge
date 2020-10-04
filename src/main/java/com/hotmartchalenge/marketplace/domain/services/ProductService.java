@@ -22,6 +22,8 @@ public class ProductService {
 
   @Transactional
   public Product save(Product product) {
+    productRepository.detach(product);
+
     Category category = findCategoryById(product.getCategory().getId());
     product.setCategory(category);
 
