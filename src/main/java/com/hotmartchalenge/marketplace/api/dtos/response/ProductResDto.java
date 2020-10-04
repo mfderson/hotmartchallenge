@@ -11,4 +11,5 @@ public class ProductResDto {
   private String name;
   private String description;
   private OffsetDateTime createdAt;
+  private Double score;
 }
