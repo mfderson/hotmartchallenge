@@ -55,7 +55,7 @@ public class Product {
     int numberOfSales = 0;
 
     for (Sale sale : this.getSales()) {
-      if (datetimeTwelveMonthsAgo.compareTo(sale.getCreatedAt()) >= 0) {
+      if (sale.getCreatedAt().isAfter(datetimeTwelveMonthsAgo)) {
         numberOfSales++;
         sumRating += sale.getRating();
       }
@@ -65,7 +65,7 @@ public class Product {
   }
 
   public Double calculateSalesPerDay() {
-    Long numberOfDays = ChronoUnit.DAYS.between(OffsetDateTime.now(), getCreatedAt());
+    Long numberOfDays = ChronoUnit.DAYS.between(getCreatedAt(), OffsetDateTime.now());
 
     return numberOfDays > 0 ? getSales().size() / numberOfDays : 0.0;
   }
