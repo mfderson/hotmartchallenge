@@ -14,11 +14,5 @@ public class NewsController {
   @GetMapping("/populate")
   public void populate() {
     newsService.populateDb();
-    System.out.println("Dados da primeira noticia:");
-    // System.out.println(news.getStatus());
-    // System.out.println(news.getTotalResults());
-    // System.out.println(news.getArticles().get(0).getUrl());
-    // System.out.println(news.get(0).getPublishedAt());
-    // System.out.println(news.get(0).getTitle());
   }
 }

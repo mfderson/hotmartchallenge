@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -20,15 +21,25 @@ public class NewsService {
 
   @Autowired private CategoryRepository categoryRepository;
 
-  private static final WebClient WEB_CLIENT = WebClient.create("http://newsapi.org/v2");
+  @Value("${marketplace.news-api.base-url}")
+  private String baseUrl;
 
-  private static final String DATE_FROM = "2020-10-01";
+  @Value("${marketplace.news-api.date-from}")
+  private String dateFrom;
 
-  private static final int MAX_NUM_NEWS_TO_INSERT = 20;
+  @Value("${marketplace.news-api.apiKey}")
+  private String apiKey;
+
+  @Value("${marketplace.news-api.max-new-category-populate-db}")
+  private int maxNumberNewsToInsert;
+
+  private WebClient webClient;
 
   public void populateDb() {
+    webClient = WebClient.create(baseUrl);
     List<Category> categories = categoryRepository.findAll();
-    if (!categories.isEmpty()) {
+
+    if (categories.isEmpty() || newsRepository.count() > 0) {
       return;
     }
 
@@ -45,23 +56,22 @@ public class NewsService {
       news.setCategory(category);
       news.setPublishedAt(OffsetDateTime.parse(article.getPublishedAt()));
       newsToInsert.add(news);
-      if (newsToInsert.size() == MAX_NUM_NEWS_TO_INSERT) break;
+      if (newsToInsert.size() == maxNumberNewsToInsert) break;
     }
 
     newsRepository.saveAll(newsToInsert);
   }
 
   private NewsResApiDto getNewsToPopulateDb(String category) {
-
     Mono<NewsResApiDto> monoNews =
-        WEB_CLIENT
+        webClient
             .get()
             .uri(
                 builder ->
                     builder
                         .path("/everything")
                         .queryParam("q", category)
-                        .queryParam("from", DATE_FROM)
+                        .queryParam("from", dateFrom)
                         .queryParam("apiKey", "22b3c63aa37348139c3b4fee6348939c")
                         .build())
             .retrieve()
