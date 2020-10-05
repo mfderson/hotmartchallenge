@@ -13,6 +13,7 @@ public class NewsController {
 
   @GetMapping("/populate")
   public void populate() {
+    newsService.populateDb();
     System.out.println("Dados da primeira noticia:");
     // System.out.println(news.getStatus());
     // System.out.println(news.getTotalResults());
