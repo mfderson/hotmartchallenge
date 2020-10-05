@@ -6,6 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ArticlesResApiDto {
-  private String url;
   private String publishedAt;
 }
