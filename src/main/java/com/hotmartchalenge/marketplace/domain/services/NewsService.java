@@ -28,7 +28,7 @@ public class NewsService {
 
   public void populateDb() {
     List<Category> categories = categoryRepository.findAll();
-    if (categories.isEmpty()) {
+    if (!categories.isEmpty()) {
       return;
     }
 
@@ -43,7 +43,6 @@ public class NewsService {
     for (ArticlesResApiDto article : newsList) {
       News news = new News();
       news.setCategory(category);
-      System.out.println(article.getPublishedAt());
       news.setPublishedAt(OffsetDateTime.parse(article.getPublishedAt()));
       newsToInsert.add(news);
       if (newsToInsert.size() == MAX_NUM_NEWS_TO_INSERT) break;
