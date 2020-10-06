@@ -21,5 +21,7 @@ public class News {
 
   private OffsetDateTime publishedAt;
 
+  private Integer totalResults;
+
   @ManyToOne private Category category;
 }
