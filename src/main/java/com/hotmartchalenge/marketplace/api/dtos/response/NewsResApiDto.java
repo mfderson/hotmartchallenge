@@ -7,5 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NewsResApiDto {
+  private Integer totalResults;
   private List<ArticlesResApiDto> articles;
 }
