@@ -13,7 +13,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
 
   @Query(
       value =
-          "from News n where n.category.id = :categoryId AND n.publishedAt between :startDate AND :endDate")
+          "select n from News n inner join n.category c where c.id = :categoryId AND n.publishedAt between :startDate AND :endDate")
   public List<News> getAllBetweenDates(
       @Param("categoryId") Long categoryId,
       @Param("startDate") OffsetDateTime startDate,
