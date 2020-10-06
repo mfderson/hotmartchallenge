@@ -32,16 +32,6 @@ public class TopHeadLinesService {
 
   private WebClient webClient;
 
-  public void testQueryMarota() {
-    OffsetDateTime start =
-        OffsetDateTime.parse("2020-10-05T00:00:00+00:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    OffsetDateTime end =
-        OffsetDateTime.parse("2020-10-05T23:59:59+00:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    List<News> news = newsRepository.getAllBetweenDates(1L, start, end);
-    System.out.println(":::Query marota:::");
-    System.out.println(news.size());
-  }
-
   public void topHeadlinesToPopulateDb() {
     webClient = WebClient.create(baseUrl);
 
@@ -71,7 +61,7 @@ public class TopHeadLinesService {
     List<News> newsListDb = newsRepository.getAllBetweenDates(category.getId(), startDate, endDate);
     System.out.println(
         String.format(
-            ":::Category name: %s, newsListDb.size: ", category.getName(), newsListDb.size()));
+            ":::Category name: %s, newsListDb.size: %d", category.getName(), newsListDb.size()));
 
     if (!newsListDb.isEmpty()) {
       System.out.println(
