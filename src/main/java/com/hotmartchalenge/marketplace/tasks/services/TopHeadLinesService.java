@@ -6,8 +6,8 @@ import com.hotmartchalenge.marketplace.domain.entities.Category;
 import com.hotmartchalenge.marketplace.domain.entities.News;
 import com.hotmartchalenge.marketplace.domain.repositories.CategoryRepository;
 import com.hotmartchalenge.marketplace.domain.repositories.NewsRepository;
+import com.hotmartchalenge.marketplace.utils.FormatDatetimeUtils;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +38,7 @@ public class TopHeadLinesService {
     List<Category> categories = categoryRepository.findAll();
 
     for (Category category : categories) {
-      NewsResApiDto newResDto = getTopHeadlinesToPopulateDb(category.getName());
+      NewsResApiDto newResDto = getApiTopHeadlinesToPopulateDb(category.getName());
       saveListNews(newResDto, category);
     }
   }
@@ -49,25 +49,12 @@ public class TopHeadLinesService {
     }
 
     String earliestDate = getEarliestDateFromArticles(news.getArticles());
-    OffsetDateTime startDate =
-        OffsetDateTime.parse(
-            String.format("%sT00:00:00+00:00", earliestDate),
-            DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    OffsetDateTime endDate =
-        OffsetDateTime.parse(
-            String.format("%sT23:59:59+00:00", earliestDate),
-            DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    OffsetDateTime startDate = FormatDatetimeUtils.convertTimeToStartDay(earliestDate);
+    OffsetDateTime endDate = FormatDatetimeUtils.convertTimeToEndDay(earliestDate);
 
     List<News> newsListDb = newsRepository.getAllBetweenDates(category.getId(), startDate, endDate);
-    System.out.println(
-        String.format(
-            ":::Category name: %s, newsListDb.size: %d", category.getName(), newsListDb.size()));
 
     if (!newsListDb.isEmpty()) {
-      System.out.println(
-          String.format(
-              "Category name: %s, News id: %d", category.getName(), newsListDb.get(0).getId()));
-      System.out.println(newsListDb.get(0).getId());
       newsListDb.get(0).setTotalResults(news.getTotalResults());
       newsRepository.save(newsListDb.get(0));
     } else {
@@ -87,7 +74,7 @@ public class TopHeadLinesService {
     return articles.get(0).getPublishedAt().split("T")[0];
   }
 
-  private NewsResApiDto getTopHeadlinesToPopulateDb(String category) {
+  private NewsResApiDto getApiTopHeadlinesToPopulateDb(String category) {
     Mono<NewsResApiDto> monoNews =
         webClient
             .get()
