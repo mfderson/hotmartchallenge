@@ -83,7 +83,6 @@ public class TopHeadLinesService {
                     builder
                         .path("/top-headlines")
                         .queryParam("q", category)
-                        .queryParam("country", "us")
                         .queryParam("apiKey", apiKey)
                         .build())
             .retrieve()
