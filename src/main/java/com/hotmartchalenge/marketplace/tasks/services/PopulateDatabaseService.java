@@ -1,11 +1,11 @@
 package com.hotmartchalenge.marketplace.tasks.services;
 
-import com.hotmartchalenge.marketplace.api.dtos.response.ArticlesResApiDto;
 import com.hotmartchalenge.marketplace.api.dtos.response.NewsResApiDto;
 import com.hotmartchalenge.marketplace.domain.entities.Category;
 import com.hotmartchalenge.marketplace.domain.entities.News;
 import com.hotmartchalenge.marketplace.domain.repositories.CategoryRepository;
 import com.hotmartchalenge.marketplace.domain.repositories.NewsRepository;
+import com.hotmartchalenge.marketplace.utils.FormatDatetimeUtils;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +24,8 @@ public class PopulateDatabaseService {
   @Value("${marketplace.news-api.base-url}")
   private String baseUrl;
 
-  @Value("${marketplace.news-api.date-from}")
-  private String dateFrom;
+  @Value("${marketplace.news-api.number-of-days-to-fill-database}")
+  private int numberDaysFillDatabase;
 
   @Value("${marketplace.news-api.apiKey}")
   private String apiKey;
@@ -43,26 +43,63 @@ public class PopulateDatabaseService {
       return;
     }
 
+    saveNewsFromLastDays(categories, numberDaysFillDatabase);
+  }
+
+  private void saveNewsFromLastDays(List<Category> categories, int lastDays) {
+    OffsetDateTime today = OffsetDateTime.now();
+
+    for (int i = 0; i < 1; i++) {
+      OffsetDateTime predecessor = today.minusDays(i);
+      saveNews(
+          categories, predecessor.toString().split("T")[0], predecessor.toString().split("T")[0]);
+    }
+  }
+
+  public void saveNews(List<Category> categories, String dateFrom, String dateTo) {
+    List<News> listNewsToInsert = new ArrayList<>();
+
     for (Category category : categories) {
-      NewsResApiDto newResDto = getNewsToPopulateDbFirstTime(category.getName());
-      saveListNews(newResDto.getArticles(), category);
+      NewsResApiDto newResDto = getNewsFromApi(category.getName(), dateFrom, dateTo);
+      News newsToInsert = new News();
+      newsToInsert.setCategory(category);
+      newsToInsert.setPublishedAt(FormatDatetimeUtils.convertTimeToStartDay(dateFrom));
+      newsToInsert.setTotalResults(newResDto.getTotalResults());
+      listNewsToInsert.add(newsToInsert);
+      //   try {
+      //     TimeUnit.SECONDS.sleep(5);
+      //   } catch (InterruptedException e) {
+      //     // TODO Auto-generated catch block
+      //     e.printStackTrace();
+      //   }
     }
+
+    newsRepository.saveAll(listNewsToInsert);
   }
 
-  public void saveListNews(List<ArticlesResApiDto> newsList, Category category) {
-    List<News> newsToInsert = new ArrayList<>();
-    for (ArticlesResApiDto article : newsList) {
-      News news = new News();
-      news.setCategory(category);
-      news.setPublishedAt(OffsetDateTime.parse(article.getPublishedAt()));
-      newsToInsert.add(news);
-      if (newsToInsert.size() == maxNumberNewsToInsert) break;
-    }
+  // public void saveListNews(List<ArticlesResApiDto> newsList, Category category) {
+  //   List<News> listNewsToInsert = new ArrayList<>();
+  //   List<News> listDb =
+  //       newsRepository.getAllBetweenDates(
+  //           category.getId(),
+  //           FormatDatetimeUtils.convertTimeToStartDay(dateFrom),
+  //           FormatDatetimeUtils.convertTimeToStartDay(dateTo));
 
-    newsRepository.saveAll(newsToInsert);
-  }
+  //   System.out.println(":::listDb::: " + category.getName());
+  //   System.out.println(listDb.size());
 
-  private NewsResApiDto getNewsToPopulateDbFirstTime(String category) {
+  //   for (ArticlesResApiDto article : newsList) {
+  //     News news = new News();
+  //     news.setCategory(category);
+  //     news.setPublishedAt(OffsetDateTime.parse(article.getPublishedAt()));
+  //     listNewsToInsert.add(news);
+  //     // if (listNewsToInsert.size() == maxNumberNewsToInsert) break;
+  //   }
+
+  //   newsRepository.saveAll(listNewsToInsert);
+  // }
+
+  private NewsResApiDto getNewsFromApi(String category, String dateFrom, String dateTo) {
     Mono<NewsResApiDto> monoNews =
         webClient
             .get()
@@ -72,6 +109,7 @@ public class PopulateDatabaseService {
                         .path("/everything")
                         .queryParam("q", category)
                         .queryParam("from", dateFrom)
+                        .queryParam("to", dateTo)
                         .queryParam("apiKey", apiKey)
                         .build())
             .retrieve()
