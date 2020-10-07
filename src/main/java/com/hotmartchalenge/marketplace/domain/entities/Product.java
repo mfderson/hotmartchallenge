@@ -1,5 +1,6 @@
 package com.hotmartchalenge.marketplace.domain.entities;
 
+import com.hotmartchalenge.marketplace.utils.FormatDatetimeUtils;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -46,10 +47,13 @@ public class Product {
 
   @PostLoad
   private void setScoreWithCalculatedValues() {
-    score = calculateAverageLastTwelveMonths() + calculateSalesPerDay();
+    score =
+        calculateSalesAverageLastTwelveMonths()
+            + calculateSalesPerDayByProductCreateAt()
+            + calculateNumberOfNewsPerDay();
   }
 
-  public Double calculateAverageLastTwelveMonths() {
+  public Double calculateSalesAverageLastTwelveMonths() {
     double sumRating = 0.0;
     OffsetDateTime datetimeTwelveMonthsAgo = OffsetDateTime.now().minusMonths(12L);
     int numberOfSales = 0;
@@ -64,9 +68,19 @@ public class Product {
     return numberOfSales > 0 ? sumRating / numberOfSales : 0.0;
   }
 
-  public Double calculateSalesPerDay() {
-    Long numberOfDays = ChronoUnit.DAYS.between(getCreatedAt(), OffsetDateTime.now());
+  public Float calculateSalesPerDayByProductCreateAt() {
+    Long numberOfDays = Math.abs(ChronoUnit.DAYS.between(getCreatedAt(), OffsetDateTime.now()));
 
-    return numberOfDays > 0 ? getSales().size() / numberOfDays : 0.0;
+    return numberOfDays > 0 ? ((float) getSales().size() / (float) numberOfDays) : 0f;
+  }
+
+  public Integer calculateNumberOfNewsPerDay() {
+    for (News news : getCategory().getNews()) {
+      if (FormatDatetimeUtils.compareTwoDatesOnlyDatePart(
+          OffsetDateTime.now(), news.getPublishedAt())) {
+        return news.getTotalResults();
+      }
+    }
+    return 0;
   }
 }
