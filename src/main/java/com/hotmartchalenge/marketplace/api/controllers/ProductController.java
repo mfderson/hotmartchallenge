@@ -47,16 +47,21 @@ public class ProductController {
 
   @GetMapping
   public Page<ProductResDto> list(
-      @RequestParam(required = false, defaultValue = "") String name, Pageable pageable) {
-    Page<Product> productsPage =
-        productRepository.findAllByNameContainingIgnoreCase(name, pageable);
+      @RequestParam(required = false, defaultValue = "") String name,
+      @RequestParam(required = false, defaultValue = "") String date,
+      Pageable pageable) {
+
+    Page<Product> productsPage = productService.findAllByNameAndDate(name, date, pageable);
 
     List<ProductResDto> productsList =
         productResDtoAssembler.toCollectionDto(productsPage.getContent());
 
     Collections.sort(
         productsList,
-        Comparator.comparing(ProductResDto::getScore).thenComparing(ProductResDto::getName));
+        Comparator.comparing(ProductResDto::getScore)
+            .reversed()
+            .thenComparing(ProductResDto::getName)
+            .thenComparing(ProductResDto::getCategoryName));
 
     Page<ProductResDto> productResDtoPage =
         new PageImpl<>(productsList, pageable, productsPage.getTotalElements());
