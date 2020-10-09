@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import com.hotmartchalenge.marketplace.domain.exceptions.EntityNotFoundException;
+import com.hotmartchalenge.marketplace.domain.exceptions.ParameterFormatException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
@@ -37,6 +41,20 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     HttpStatus status = HttpStatus.NOT_FOUND;
     ErrorType errorType = ErrorType.RESOURCE_NOT_FOUND;
+    String detail = ex.getMessage();
+
+    ErrorMessage errorMessage =
+        createErrorMessageBuilder(status, errorType, detail).userMessage(detail).build();
+
+    return handleExceptionInternal(ex, errorMessage, new HttpHeaders(), status, request);
+  }
+
+  @ExceptionHandler(ParameterFormatException.class)
+  public ResponseEntity<?> handleParameterFormatException(
+      ParameterFormatException ex, WebRequest request) {
+
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    ErrorType errorType = ErrorType.INVALID_PARAMETER_FORMAT;
     String detail = ex.getMessage();
 
     ErrorMessage errorMessage =
@@ -155,6 +173,42 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         String.format(
             "Property '%s' has received '%s'. Enter a value of type %s",
             path, ex.getValue(), ex.getTargetType().getSimpleName());
+
+    ErrorMessage errorMessage =
+        createErrorMessageBuilder(status, errorType, detail).userMessage(detail).build();
+
+    return handleExceptionInternal(ex, errorMessage, headers, status, request);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleTypeMismatch(
+      TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+
+    if (ex instanceof MethodArgumentTypeMismatchException)
+      return handleMethodArgumentTypeMismatch(
+          (MethodArgumentTypeMismatchException) ex, headers, status, request);
+
+    return super.handleTypeMismatch(ex, headers, status, request);
+  }
+
+  private ResponseEntity<Object> handleMethodArgumentTypeMismatch(
+      MethodArgumentTypeMismatchException ex,
+      HttpHeaders headers,
+      HttpStatus status,
+      WebRequest request) {
+
+    ErrorType errorType = ErrorType.INVALID_PARAMETER;
+
+    String detail =
+        String.format(
+            "Parameter '%s' in URL receive the value type '%s'. Inform one value type of " + "%s",
+            ex.getName(),
+            ex.getValue(),
+            Objects.requireNonNull(ex.getRequiredType()).getSimpleName());
+
+    if (Objects.requireNonNull(ex.getRequiredType()).getSimpleName().equals("Date")) {
+      detail = detail + " on format yyyy-mm-dd";
+    }
 
     ErrorMessage errorMessage =
         createErrorMessageBuilder(status, errorType, detail).userMessage(detail).build();

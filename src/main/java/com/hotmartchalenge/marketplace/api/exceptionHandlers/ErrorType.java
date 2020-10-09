@@ -10,7 +10,8 @@ public enum ErrorType {
   JSON_SYNTAX_ERROR("JSON sintax error"),
   INVALID_PARAMETER("Invalid parameter"),
   SYSTEM_ERROR("System error"),
-  INVALID_DATA("Invalid data");
+  INVALID_DATA("Invalid data"),
+  INVALID_PARAMETER_FORMAT("Invalid parameter format");
 
   private final String title;
 
