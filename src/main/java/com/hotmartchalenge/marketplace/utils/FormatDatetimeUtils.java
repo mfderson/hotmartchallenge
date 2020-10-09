@@ -1,21 +1,32 @@
 package com.hotmartchalenge.marketplace.utils;
 
+import com.hotmartchalenge.marketplace.domain.exceptions.DateFormatException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public class FormatDatetimeUtils {
 
+  private static final String MSG_FORMAT_DATE = "The date must be in the format YYYY-MM-DD";
+
   public static OffsetDateTime convertTimeToStartDay(String dateToBeConverted) {
-    return OffsetDateTime.parse(
-        String.format("%sT00:00:00+00:00", dateToBeConverted),
-        DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    try {
+      return OffsetDateTime.parse(
+          String.format("%sT00:00:00+00:00", dateToBeConverted.substring(0, 10)),
+          DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    } catch (StringIndexOutOfBoundsException e) {
+      throw new DateFormatException(MSG_FORMAT_DATE);
+    }
   }
 
   public static OffsetDateTime convertTimeToEndDay(String dateToBeConverted) {
-    return OffsetDateTime.parse(
-        String.format("%sT23:59:59+00:00", dateToBeConverted),
-        DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    try {
+      return OffsetDateTime.parse(
+          String.format("%sT23:59:59+00:00", dateToBeConverted.substring(0, 10)),
+          DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    } catch (StringIndexOutOfBoundsException e) {
+      throw new DateFormatException(MSG_FORMAT_DATE);
+    }
   }
 
   public static OffsetDateTime convertTimeToStartDay(OffsetDateTime dateToBeConverted) {
