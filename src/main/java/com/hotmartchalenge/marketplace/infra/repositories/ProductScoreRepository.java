@@ -18,16 +18,18 @@ public interface ProductScoreRepository extends JpaRepository<Product, Long> {
               + "p.name as name, "
               + "p.description as description, "
               + "p.created_at as createdAt, "
-              + "round(cast((coalesce(avg(s.rating), 0) + coalesce(count(s.id)/date_part('day', AGE(now(), p.created_at)), 0) + coalesce(count(n.id))) as numeric),2) as score "
+              + "round(cast((coalesce(avg(s.rating), 0) "
+              + "+ case date_part('day', AGE(now(), p.created_at)) when 0 then 0 else coalesce(count(s.id)/date_part('day', AGE(now(), p.created_at)), 0) end "
+              + "+ coalesce(n.total_results, 0)) as numeric),2) as score "
               + "from product p "
               + "left join category c on p.category_id = c.id "
               + "left join news n on c.id = n.category_id "
               + "and date(n.published_at) = :currentDate "
               + "left join sale s on p.id = s.product_id "
               + "and s.created_at > (p.created_at - interval '1 year') "
-              + "where lower(p.name) like :name% "
-              + "group by p.id, c.name "
-              + "order by score desc, p.name, c.name",
+              + "where lower(p.name) like %:name% "
+              + "group by p.id, c.name, n.id "
+              + "order by score desc, p.name, c.name ",
       nativeQuery = true)
   Page<ProductScore> findAllByNameAndDateOrdered(
       String name, LocalDate currentDate, Pageable pageable);
