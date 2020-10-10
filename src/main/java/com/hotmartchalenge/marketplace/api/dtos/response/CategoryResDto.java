@@ -1,15 +1,11 @@
 package com.hotmartchalenge.marketplace.api.dtos.response;
 
-import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ProductResDto {
+public class CategoryResDto {
   private Long id;
   private String name;
-  private String description;
-  private CategoryResDto category;
-  private OffsetDateTime createdAt;
 }
