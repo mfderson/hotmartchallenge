@@ -206,8 +206,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             ex.getValue(),
             Objects.requireNonNull(ex.getRequiredType()).getSimpleName());
 
-    if (Objects.requireNonNull(ex.getRequiredType()).getSimpleName().equals("Date")) {
-      detail = detail + " on format yyyy-mm-dd";
+    if (Objects.requireNonNull(ex.getRequiredType()).getSimpleName().equals("LocalDate")) {
+      detail = detail + " in format yyyy-mm-dd";
     }
 
     ErrorMessage errorMessage =
