@@ -1,20 +1,25 @@
 package com.hotmartchalenge.marketplace.api.controllers;
 
+import com.hotmartchalenge.marketplace.api.assemblers.PageResDtoAssembler;
 import com.hotmartchalenge.marketplace.api.assemblers.ProductReqDtoDisassembler;
 import com.hotmartchalenge.marketplace.api.assemblers.ProductResDtoAssembler;
 import com.hotmartchalenge.marketplace.api.dtos.request.ProductReqDto;
+import com.hotmartchalenge.marketplace.api.dtos.response.PageResDto;
 import com.hotmartchalenge.marketplace.api.dtos.response.ProductResDto;
 import com.hotmartchalenge.marketplace.domain.entities.Product;
-import com.hotmartchalenge.marketplace.domain.repositories.ProductRepository;
 import com.hotmartchalenge.marketplace.domain.services.ProductService;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import com.hotmartchalenge.marketplace.infra.dtos.ProductScore;
+import com.hotmartchalenge.marketplace.infra.repositories.ProductScoreRepository;
+import java.time.LocalDate;
+import java.util.Map;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,11 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
   @Autowired private ProductService productService;
 
-  @Autowired private ProductRepository productRepository;
+  @Autowired private ProductScoreRepository productScoreRepository;
 
   @Autowired private ProductResDtoAssembler productResDtoAssembler;
 
   @Autowired private ProductReqDtoDisassembler productReqDtoDisassembler;
+
+  @Autowired private PageResDtoAssembler pageResDtoAssembler;
 
   @GetMapping("/{id}")
   public ProductResDto findById(@PathVariable Long id) {
@@ -46,27 +53,23 @@ public class ProductController {
   }
 
   @GetMapping
-  public Page<ProductResDto> list(
-      @RequestParam(required = false, defaultValue = "") String name,
-      @RequestParam(required = false, defaultValue = "") String date,
+  public PageResDto<ProductScore> listProductOrderedByScoreNameCategoryName(
+      @RequestParam(required = false, defaultValue = "") String searchTerm,
+      @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate currentDate,
       Pageable pageable) {
+    pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted());
 
-    Page<Product> productsPage = productService.findAllByNameAndDate(name, date, pageable);
+    currentDate = currentDate == null ? LocalDate.now() : currentDate;
 
-    List<ProductResDto> productsList =
-        productResDtoAssembler.toCollectionDto(productsPage.getContent());
+    Page<ProductScore> products =
+        productScoreRepository.findAllByNameAndDateOrdered(
+            searchTerm.toLowerCase(), currentDate, pageable);
 
-    Collections.sort(
-        productsList,
-        Comparator.comparing(ProductResDto::getScore)
-            .reversed()
-            .thenComparing(ProductResDto::getName)
-            .thenComparing(ProductResDto::getCategoryName));
+    Map<String, Object> filters = Map.of("searchTerm", searchTerm, "currentDate", currentDate);
 
-    Page<ProductResDto> productResDtoPage =
-        new PageImpl<>(productsList, pageable, productsPage.getTotalElements());
+    PageResDto<ProductScore> pageResDto = pageResDtoAssembler.toDto(products, filters);
 
-    return productResDtoPage;
+    return pageResDto;
   }
 
   @PostMapping
