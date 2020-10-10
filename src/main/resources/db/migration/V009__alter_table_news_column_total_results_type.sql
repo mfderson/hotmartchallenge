@@ -1,0 +1,1 @@
+alter table news alter column total_results type integer USING (total_results::integer);
