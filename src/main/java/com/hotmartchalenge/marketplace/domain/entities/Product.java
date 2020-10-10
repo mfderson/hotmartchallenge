@@ -40,7 +40,11 @@ public class Product {
   @JoinColumn(name = "category_id")
   private Category category;
 
-  @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "product",
+      cascade = CascadeType.REMOVE,
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
   private List<Sale> sales = new ArrayList<>();
 
   @Transient private Double score;
