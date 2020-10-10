@@ -3,6 +3,7 @@ package com.hotmartchalenge.marketplace.api.exceptionHandlers;
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import com.hotmartchalenge.marketplace.domain.exceptions.BusinessException;
 import com.hotmartchalenge.marketplace.domain.exceptions.EntityNotFoundException;
 import com.hotmartchalenge.marketplace.domain.exceptions.ParameterFormatException;
 import java.time.LocalDateTime;
@@ -189,6 +190,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
           (MethodArgumentTypeMismatchException) ex, headers, status, request);
 
     return super.handleTypeMismatch(ex, headers, status, request);
+  }
+
+  @ExceptionHandler(BusinessException.class)
+  public ResponseEntity<?> handleBusinessException(BusinessException ex, WebRequest request) {
+
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    ErrorType errorType = ErrorType.BUSINESS_ERROR;
+    String detail = ex.getMessage();
+
+    ErrorMessage errorMessage =
+        createErrorMessageBuilder(status, errorType, detail).userMessage(detail).build();
+
+    return handleExceptionInternal(ex, errorMessage, new HttpHeaders(), status, request);
   }
 
   private ResponseEntity<Object> handleMethodArgumentTypeMismatch(

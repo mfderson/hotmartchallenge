@@ -2,6 +2,7 @@ package com.hotmartchalenge.marketplace.domain.services;
 
 import com.hotmartchalenge.marketplace.domain.entities.Category;
 import com.hotmartchalenge.marketplace.domain.entities.Product;
+import com.hotmartchalenge.marketplace.domain.exceptions.BusinessException;
 import com.hotmartchalenge.marketplace.domain.exceptions.CategoryNotFoundException;
 import com.hotmartchalenge.marketplace.domain.exceptions.ProductNotFoundException;
 import com.hotmartchalenge.marketplace.domain.repositories.CategoryRepository;
@@ -27,6 +28,10 @@ public class ProductService {
     Category category = findCategoryById(product.getCategory().getId());
     product.setCategory(category);
 
+    if (existProductWithSameName(product.getName())) {
+      throw new BusinessException("There is already a product with the same name");
+    }
+
     return productRepository.save(product);
   }
 
@@ -38,5 +43,9 @@ public class ProductService {
 
   private Category findCategoryById(Long id) {
     return categoryRepository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
+  }
+
+  private boolean existProductWithSameName(String name) {
+    return !productRepository.findByNameContainingIgnoreCase(name).isEmpty();
   }
 }
