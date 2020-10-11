@@ -3,6 +3,7 @@ package com.hotmartchalenge.marketplace.api.controllers;
 import com.hotmartchalenge.marketplace.api.assemblers.PageResDtoAssembler;
 import com.hotmartchalenge.marketplace.api.assemblers.ProductReqDtoDisassembler;
 import com.hotmartchalenge.marketplace.api.assemblers.ProductResDtoAssembler;
+import com.hotmartchalenge.marketplace.api.controllers.openapi.ProductControllerOpenapi;
 import com.hotmartchalenge.marketplace.api.dtos.request.ProductReqDto;
 import com.hotmartchalenge.marketplace.api.dtos.response.PageResDto;
 import com.hotmartchalenge.marketplace.api.dtos.response.ProductResDto;
@@ -34,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/products")
-public class ProductController {
+public class ProductController implements ProductControllerOpenapi {
   @Autowired private ProductService productService;
 
   @Autowired private ProductScoreRepository productScoreRepository;
@@ -90,6 +91,7 @@ public class ProductController {
   }
 
   @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long id) {
     productService.delete(id);
   }
