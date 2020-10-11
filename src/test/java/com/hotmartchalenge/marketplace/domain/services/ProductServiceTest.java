@@ -1,6 +1,5 @@
 package com.hotmartchalenge.marketplace.domain.services;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -85,7 +84,10 @@ public class ProductServiceTest {
   @Test
   @DisplayName("Should be able save a correct product")
   void shouldBeAbleSaveCorrectProdoct() {
-    doReturn(mockedProduct).when(mockedProductRepository).save(any());
+    doReturn(mockedProduct).when(mockedProductRepository).save(mockedProduct);
+    doReturn(Optional.of(mockedCategory))
+        .when(mockedCategoryRepository)
+        .findById(mockedCategory.getId());
 
     Product returnedProduct = productService.save(mockedProduct);
 
@@ -106,6 +108,10 @@ public class ProductServiceTest {
     doReturn(List.of(mockedProduct))
         .when(mockedProductRepository)
         .findByNameContainingIgnoreCase(mockedProductSameName.getName());
+
+    doReturn(Optional.of(mockedCategory))
+        .when(mockedCategoryRepository)
+        .findById(mockedCategory.getId());
 
     BusinessException ex =
         Assertions.assertThrows(
