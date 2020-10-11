@@ -8,6 +8,7 @@ import com.hotmartchalenge.marketplace.domain.exceptions.ProductNotFoundExceptio
 import com.hotmartchalenge.marketplace.domain.repositories.CategoryRepository;
 import com.hotmartchalenge.marketplace.domain.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,12 @@ public class ProductService {
 
   @Autowired private CategoryRepository categoryRepository;
 
+  @Value("${marketplace.domain.product-name-size}")
+  private int nameMaxSize;
+
+  @Value("${marketplace.domain.product-description-size}")
+  private int descriptionMaxSize;
+
   public Product findById(Long id) {
     return productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
   }
@@ -24,6 +31,14 @@ public class ProductService {
   @Transactional
   public Product save(Product product) {
     productRepository.detach(product);
+
+    if (nameSizeGreaterThanMax(product)) {
+      throw new BusinessException("Name of product must be less than " + nameMaxSize);
+    }
+
+    if (descriptionSizeGreaterThanMax(product)) {
+      throw new BusinessException("Description of product must be less than " + descriptionMaxSize);
+    }
 
     Category category = findCategoryById(product.getCategory().getId());
     product.setCategory(category);
@@ -47,5 +62,13 @@ public class ProductService {
 
   private boolean existProductWithSameName(String name) {
     return !productRepository.findByNameContainingIgnoreCase(name).isEmpty();
+  }
+
+  private boolean nameSizeGreaterThanMax(Product product) {
+    return product.getName().length() > nameMaxSize;
+  }
+
+  private boolean descriptionSizeGreaterThanMax(Product product) {
+    return product.getDescription().length() > nameMaxSize;
   }
 }
