@@ -6,7 +6,7 @@ import com.hotmartchalenge.marketplace.domain.entities.News;
 import com.hotmartchalenge.marketplace.domain.repositories.CategoryRepository;
 import com.hotmartchalenge.marketplace.domain.repositories.NewsRepository;
 import com.hotmartchalenge.marketplace.utils.FormatDatetimeUtils;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +33,9 @@ public class PopulateDatabaseService {
   @Value("${marketplace.news-api.max-new-category-populate-db}")
   private int maxNumberNewsToInsert;
 
+  @Value("${marketplace.news-api.number-of-days-to-fill-database}")
+  private int maxLastDaysToPopulateTableNews;
+
   private WebClient webClient;
 
   public void firstTimePopulateDb() {
@@ -47,12 +50,11 @@ public class PopulateDatabaseService {
   }
 
   private void saveNewsFromLastDays(List<Category> categories, int lastDays) {
-    OffsetDateTime today = OffsetDateTime.now();
+    LocalDate today = LocalDate.now();
 
-    for (int i = 0; i < 1; i++) {
-      OffsetDateTime predecessor = today.minusDays(i);
-      saveNews(
-          categories, predecessor.toString().split("T")[0], predecessor.toString().split("T")[0]);
+    for (int i = 0; i < maxLastDaysToPopulateTableNews; i++) {
+      LocalDate predecessor = today.minusDays(i);
+      saveNews(categories, predecessor.toString(), predecessor.toString());
     }
   }
 
