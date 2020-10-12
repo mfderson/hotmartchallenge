@@ -1,6 +1,5 @@
 package com.hotmartchalenge.marketplace.tasks.services;
 
-import com.hotmartchalenge.marketplace.api.dtos.response.ArticlesResApiDto;
 import com.hotmartchalenge.marketplace.api.dtos.response.NewsResApiDto;
 import com.hotmartchalenge.marketplace.domain.entities.Category;
 import com.hotmartchalenge.marketplace.domain.entities.News;
@@ -8,6 +7,7 @@ import com.hotmartchalenge.marketplace.domain.repositories.CategoryRepository;
 import com.hotmartchalenge.marketplace.domain.repositories.NewsRepository;
 import com.hotmartchalenge.marketplace.utils.FormatDatetimeUtils;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,49 +32,54 @@ public class TopHeadLinesService {
 
   private WebClient webClient;
 
-  public void topHeadlinesToPopulateDb() {
+  public void topHeadlines() {
     webClient = WebClient.create(baseUrl);
 
     List<Category> categories = categoryRepository.findAll();
+    List<News> listOfNewsToSave = new ArrayList<>();
 
     for (Category category : categories) {
-      NewsResApiDto newResDto = getApiTopHeadlinesToPopulateDb(category.getName());
-      saveListNews(newResDto, category);
+      NewsResApiDto newResApiDto = getApiTopHeadlinesByCategory(category.getName());
+      addNewsInList(newResApiDto, category, listOfNewsToSave);
     }
+
+    newsRepository.saveAll(listOfNewsToSave);
   }
 
-  public void saveListNews(NewsResApiDto news, Category category) {
-    if (!existNews(news)) {
+  public void addNewsInList(NewsResApiDto apiNews, Category category, List<News> listOfNewsToSave) {
+    if (!existApiNews(apiNews)) {
       return;
     }
 
-    String earliestDate = getEarliestDateFromArticles(news.getArticles());
-    OffsetDateTime startDate = FormatDatetimeUtils.convertTimeToStartDay(earliestDate);
-    OffsetDateTime endDate = FormatDatetimeUtils.convertTimeToEndDay(earliestDate);
+    OffsetDateTime startOfDay =
+        FormatDatetimeUtils.convertTimeToStartOfDay(OffsetDateTime.now()).minusDays(1L);
+    OffsetDateTime finalOfDay =
+        FormatDatetimeUtils.convertTimeToFinalOfDay(OffsetDateTime.now()).minusDays(1L);
 
-    List<News> newsListDb = newsRepository.getAllBetweenDates(category.getId(), startDate, endDate);
+    List<News> newsListDb =
+        newsRepository.getAllBetweenDates(category.getId(), startOfDay, finalOfDay);
 
     if (!newsListDb.isEmpty()) {
-      newsListDb.get(0).setTotalResults(news.getTotalResults());
-      newsRepository.save(newsListDb.get(0));
+      Integer totalNews = newsListDb.get(0).getTotalResults() + apiNews.getTotalResults();
+      newsListDb.get(0).setTotalResults(totalNews);
+      listOfNewsToSave.add(newsListDb.get(0));
+      // newsRepository.save(newsListDb.get(0));
     } else {
       News newsToInsert = new News();
       newsToInsert.setCategory(category);
-      newsToInsert.setPublishedAt(startDate);
-      newsToInsert.setTotalResults(news.getTotalResults());
-      newsRepository.save(newsToInsert);
+      newsToInsert.setPublishedAt(
+          FormatDatetimeUtils.convertTimeToStartOfDay(OffsetDateTime.now()));
+      newsToInsert.setTotalResults(apiNews.getTotalResults());
+      listOfNewsToSave.add(newsToInsert);
+      // newsRepository.save(newsToInsert);
     }
   }
 
-  private boolean existNews(NewsResApiDto news) {
+  private boolean existApiNews(NewsResApiDto news) {
     return news.getTotalResults() > 0 ? true : false;
   }
 
-  private String getEarliestDateFromArticles(List<ArticlesResApiDto> articles) {
-    return articles.get(0).getPublishedAt().split("T")[0];
-  }
-
-  private NewsResApiDto getApiTopHeadlinesToPopulateDb(String category) {
+  private NewsResApiDto getApiTopHeadlinesByCategory(String category) {
     Mono<NewsResApiDto> monoNews =
         webClient
             .get()
@@ -83,6 +88,7 @@ public class TopHeadLinesService {
                     builder
                         .path("/top-headlines")
                         .queryParam("q", category)
+                        .queryParam("pageSize", 1)
                         .queryParam("apiKey", apiKey)
                         .build())
             .retrieve()
