@@ -68,38 +68,10 @@ public class PopulateDatabaseService {
       newsToInsert.setPublishedAt(FormatDatetimeUtils.convertTimeToStartDay(dateFrom));
       newsToInsert.setTotalResults(newResDto.getTotalResults());
       listNewsToInsert.add(newsToInsert);
-      //   try {
-      //     TimeUnit.SECONDS.sleep(5);
-      //   } catch (InterruptedException e) {
-      //     // TODO Auto-generated catch block
-      //     e.printStackTrace();
-      //   }
     }
 
     newsRepository.saveAll(listNewsToInsert);
   }
-
-  // public void saveListNews(List<ArticlesResApiDto> newsList, Category category) {
-  //   List<News> listNewsToInsert = new ArrayList<>();
-  //   List<News> listDb =
-  //       newsRepository.getAllBetweenDates(
-  //           category.getId(),
-  //           FormatDatetimeUtils.convertTimeToStartDay(dateFrom),
-  //           FormatDatetimeUtils.convertTimeToStartDay(dateTo));
-
-  //   System.out.println(":::listDb::: " + category.getName());
-  //   System.out.println(listDb.size());
-
-  //   for (ArticlesResApiDto article : newsList) {
-  //     News news = new News();
-  //     news.setCategory(category);
-  //     news.setPublishedAt(OffsetDateTime.parse(article.getPublishedAt()));
-  //     listNewsToInsert.add(news);
-  //     // if (listNewsToInsert.size() == maxNumberNewsToInsert) break;
-  //   }
-
-  //   newsRepository.saveAll(listNewsToInsert);
-  // }
 
   private NewsResApiDto getNewsFromApi(String category, String dateFrom, String dateTo) {
     Mono<NewsResApiDto> monoNews =
