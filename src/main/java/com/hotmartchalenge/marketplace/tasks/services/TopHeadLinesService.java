@@ -51,10 +51,8 @@ public class TopHeadLinesService {
       return;
     }
 
-    OffsetDateTime startOfDay =
-        FormatDatetimeUtils.convertTimeToStartOfDay(OffsetDateTime.now()).minusDays(1L);
-    OffsetDateTime finalOfDay =
-        FormatDatetimeUtils.convertTimeToFinalOfDay(OffsetDateTime.now()).minusDays(1L);
+    OffsetDateTime startOfDay = FormatDatetimeUtils.convertTimeToStartOfDay(OffsetDateTime.now());
+    OffsetDateTime finalOfDay = FormatDatetimeUtils.convertTimeToFinalOfDay(OffsetDateTime.now());
 
     List<News> newsListDb =
         newsRepository.getAllBetweenDates(category.getId(), startOfDay, finalOfDay);
@@ -63,7 +61,6 @@ public class TopHeadLinesService {
       Integer totalNews = newsListDb.get(0).getTotalResults() + apiNews.getTotalResults();
       newsListDb.get(0).setTotalResults(totalNews);
       listOfNewsToSave.add(newsListDb.get(0));
-      // newsRepository.save(newsListDb.get(0));
     } else {
       News newsToInsert = new News();
       newsToInsert.setCategory(category);
@@ -71,7 +68,6 @@ public class TopHeadLinesService {
           FormatDatetimeUtils.convertTimeToStartOfDay(OffsetDateTime.now()));
       newsToInsert.setTotalResults(apiNews.getTotalResults());
       listOfNewsToSave.add(newsToInsert);
-      // newsRepository.save(newsToInsert);
     }
   }
 
