@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class DownloadLastNewsTask {
   @Autowired private TopHeadLinesService topHeadLinesService;
 
-  @Scheduled(cron = "0 0 1/4 * * *")
+  @Scheduled(cron = "0 0 1/6 * * *")
   public void downloadNews() {
     topHeadLinesService.topHeadlines();
   }
