@@ -29,7 +29,7 @@ public class FormatDatetimeUtils {
     }
   }
 
-  public static OffsetDateTime convertTimeToStartDay(OffsetDateTime dateToBeConverted) {
+  public static OffsetDateTime convertTimeToStartOfDay(OffsetDateTime dateToBeConverted) {
     return OffsetDateTime.of(
         dateToBeConverted.getYear(),
         dateToBeConverted.getMonthValue(),
@@ -41,7 +41,7 @@ public class FormatDatetimeUtils {
         ZoneOffset.UTC);
   }
 
-  public static OffsetDateTime convertTimeToEndDay(OffsetDateTime dateToBeConverted) {
+  public static OffsetDateTime convertTimeToFinalOfDay(OffsetDateTime dateToBeConverted) {
     return OffsetDateTime.of(
         dateToBeConverted.getYear(),
         dateToBeConverted.getMonthValue(),
